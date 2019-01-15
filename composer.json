@@ -4,10 +4,10 @@
     "description": "Discover imap, pop3 and smtp servers from email address",
     "keywords": ["imap","email","mail","smtp","pop3"],
     "homepage": "https://github.com/Balgor/php-mailserver-autodiscovery",
-    "license": "GNU",
+    "license": "GPL-2.0-or-later",
     "authors": [
         {
-            "name": "Matìj Smíšek",
+            "name": "Matij Smíšek",
             "email": "matej.smisek@voidmass.com",
             "homepage": "https://voidmass.com",
             "role": "Developer"
