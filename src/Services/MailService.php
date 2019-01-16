@@ -31,17 +31,20 @@ abstract class MailService implements MailServiceInterface
 
     public function getIncomingServer(): ?MailServerInterface
     {
-        
+        return $this->incomingServer;
     }
 
     public function getName(): ?string
     {
-        
+        return $this->name;
     }
 
     public function getOutgoingServer(): ?MailServerInterface
     {
-        
+        return  $this->outgoingServer;
     }
+
+    
+
 
 }

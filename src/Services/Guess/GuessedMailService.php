@@ -21,4 +21,22 @@ class GuessedMailService extends MailService
         $this->outgoingServer->guessFromEmail($email, MailServerInterface::TYPE_SMTP);
     }
 
+    public function setName($name)
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function setIncomingServer(?MailServerInterface $incomingServer)
+    {
+        $this->incomingServer = $incomingServer;
+        return $this;
+    }
+
+    public function setOutgoingServer(?MailServerInterface $outgoingServer)
+    {
+        $this->outgoingServer = $outgoingServer;
+        return $this;
+    }
+
 }

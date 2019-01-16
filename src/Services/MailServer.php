@@ -1,7 +1,7 @@
 <?php
 
 namespace Balgor\MailServerAutodiscovery\Services;
-
+use App\Module\Services\MailServerInterface;
 /**
  * Description of MailServer
  *
@@ -21,6 +21,9 @@ abstract class MailServer implements MailServerInterface
     protected $encryption;
     protected $authentication;
     protected $username;
+    
+    protected $validServer = null;
+    protected $validLogin = null;
 
     public function getType(): string
     {
@@ -93,5 +96,27 @@ abstract class MailServer implements MailServerInterface
         return '{}';
     }
     
+    
+    public function isValidServer(): ?bool
+    {
+        return $this->validServer;
+    }
+    
+    public function setValidServer($validity): MailServerInterface
+    {
+        $this->validServer = $validity;
+        return $this;
+    }
+    
+    public function isValidLogin(): ?bool
+    {
+        return $this->validLogin;
+    }
+    
+    public function setValidLogin($validity): MailServerInterface
+    {
+        $this->validLogin = $validity;
+        return $this;
+    }
     
 }

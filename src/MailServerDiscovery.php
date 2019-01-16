@@ -1,5 +1,4 @@
 <?php
-
 namespace Balgor\MailServerAutodiscovery;
 
 use App\Module\Services\MailServiceInterface;
@@ -8,9 +7,10 @@ use App\Module\Services\Mozzila\MozzilaNotationMailService;
 use App\Module\Services\Guess\GuessedMailService;
 use App\Module\Services\Outlook\OutlookNotationMailService;
 
+use App\Module\Tester\MailServerTester;
+
 /**
- * Description of MailServerDiscovery
- *
+ * 
  * @author matej.smisek
  */
 class MailServerDiscovery
@@ -29,11 +29,33 @@ class MailServerDiscovery
         self::OPTION_PREFERRED_TYPE => MailServerInterface::TYPE_IMAP,
     ];
 
+    
+    /**
+     * Options are:
+     *  - OPTION_PREFERRED_TYPE = If autoconfig return both pop3 and imap server, which one is preffered
+     *  
+     * 
+     * @param array $options
+     */
     public function __construct($options = [])
     {
         $this->options = array_merge(self::DEFAULTS, $options);
     }
 
+    
+    /**
+     * Tries to fetch email server configuration from provider, if nothing is found, "guesses" configuration based on most secure values (SSL)
+     * 
+     * Order of in which the check is performed:
+     *  - Mozzila ISPDB Database
+     *  - Mozzila Autoconfig from domain part of email (after @)
+     *  - Mozzila Autoconfig from MX DNS record from domain part of email
+     *  - Outlook Autodiscovery which includes fetching SRV records
+     * 
+     * @param string $email
+     * @return MailServiceInterface
+     * @throws RuntimeError
+     */
     public function discover(string $email): MailServiceInterface
     {
         if (($filtered = filter_var($email, FILTER_SANITIZE_EMAIL)) === false) {
@@ -50,12 +72,42 @@ class MailServerDiscovery
         if (($service = $this->getMozzilaAutoconfigFromMxRecord($email, $domain)) !== null) {
             return $service;
         }
-        if (($service = $this->getOutlookAutodiscover($email, $domain)) !== null) {
+        if (($service = $this->getOutlookAutodiscovery($email, $domain)) !== null) {
             return $service;
         }
         return $this->guessService($email);
     }
 
+    /**
+     * Performs discovery and tries to connect to resulting services.
+     * Each server in service has fields validServer set TRUE if server is successfully connected, FALSE if not
+     * validLogin then validates user and tries to login, only if server is valid (TRUE). If login test was not performed value will be NULL
+     * 
+     * WARNING
+     * Based on found service configuration this method may send password over plain text connection.
+     * If you are concerned, run first discovery and after manual check if SSL is enabled, perform validation separately
+     *
+     * 
+     * @param string $email
+     * @param string $password if not provided only checks server connection
+     * @return MailServiceInterface configured and tested service
+     */
+    public function discoverAndValidate(string $email, string $password = null)
+    {
+        $service = $this->discover($email);
+        $validator = new MailServerTester();
+        $validator->checkService($service, $password ?? false);
+        return $service;
+    }
+    
+    /**
+     * Fetches MX records from $domain and returns the one with most priority
+     * 
+     * null if nothing is found
+     * 
+     * @param string $domain
+     * @return array MX record
+     */
     protected function getMxRecord($domain)
     {
 
@@ -71,6 +123,14 @@ class MailServerDiscovery
         return array_shift($mxs);
     }
 
+    
+    /**
+     * Searches Mozzila (Thunderbird) ISPDB for any records from email domain
+     * 
+     * @param string $email
+     * @param string $domain
+     * @return MozzilaNotationMailService Configured server or null if nothing is found
+     */
     protected function getISPDBAutoconfig(string $email, string $domain)
     {
         $request = Request::create()->setUrl(self::URL_ISPDB . $domain);
@@ -81,8 +141,15 @@ class MailServerDiscovery
         }
         return null;
     }
-
-    protected function getMozzilaAutoconfig($email, $domain)
+    
+    /**
+     * Searches email provider autoconfig XML record
+     * 
+     * @param string $email
+     * @param string $domain
+     * @return MozzilaNotationMailService Configured server or null if nothing is found
+     */
+    protected function getMozzilaAutoconfig(string $email,string $domain)
     {
         $request = Request::create()->setUrl(sprintf(self::URL_MOZZILA, $domain, $email));
         if (($data = $request->send()) !== false && ($xml = $this->createXml($data, $email)) !== null) {
@@ -93,13 +160,24 @@ class MailServerDiscovery
         return null;
     }
 
-    protected function getMozzilaAutoconfigFromMxRecord($email, $domain)
+    /**
+     * Tries to fetch MX records from email domain and searches it for Mozzila autoconfig
+     * If nothing is found, tries to strip mx. and mail. subdomains from MX record and tries again
+     * 
+     * @param type $email
+     * @param type $domain
+     * @return MozzilaNotationMailService configured service or null if nothing is found
+     */
+    protected function getMozzilaAutoconfigFromMxRecord(string $email,string $domain)
     {
         $mx = $this->getMxRecord($domain);
         if (empty($mx)) {
             return null;
         }
         $target = $mx['target'];
+        if (($service = $this->getMozzilaAutoconfig($email, $target)) !== null) {
+            return $service;
+        }
         if (strpos($mx['target'],'mx.') !== false) {
             $target = substr($mx['target'], strpos($mx['target'], 'mx.') + 3);
         }
@@ -113,7 +191,15 @@ class MailServerDiscovery
         return null;
     }
 
-    protected function getOutlookAutodiscover($email, $domain)
+    
+    /**
+     * Tries all possible Outlook autodiscovery URLS and return first valid or null if none are found
+     * 
+     * @param type $email
+     * @param type $domain
+     * @return OutlookNotationMailService configured service or null if nothing is found
+     */
+    protected function getOutlookAutodiscovery(string $email,string $domain)
     {
         if (($data = $this->tryOutlookUrls($email, $domain)) === null) {
             return null;
@@ -127,6 +213,13 @@ class MailServerDiscovery
         return null;
     }
 
+    /**
+     * Return first valid autodiscovery from array of urls, if there is SRV record found, then its fetched first
+     * 
+     * @param string $email
+     * @param string $domain
+     * @return string Raw response on 200 HTTP code or null if nothing is found
+     */
     protected function tryOutlookUrls($email, $domain)
     {
         $urls = [
@@ -138,6 +231,7 @@ class MailServerDiscovery
         }
         foreach ($urls as $url) {
             $request = Request::create()->setUrl($url)->setMethod(Request::METHOD_POST)->setContentType(Request::CONTENT_XML);
+            // Set request data, usually not needed but simulates Outlook behaviour
             $request->setData('<?xml version="1.0" encoding="utf-8"?>
                     <Autodiscover>
                         <Request>
@@ -153,6 +247,12 @@ class MailServerDiscovery
         return null;
     }
 
+    /**
+     * Pools DNS SRV records for any autodiscovery settings
+     * 
+     * @param string $domain
+     * @return string URL from SRV record
+     */
     protected function resolveAutodiscoverDns($domain)
     {
         $srv = dns_get_record(self::DNS_SRV_AUTODISCOVER . $domain, DNS_SRV);
@@ -168,6 +268,14 @@ class MailServerDiscovery
         return sprintf(self::URL_OUTLOOK_BASE, array_shift($srv)['target']);
     }
 
+    
+    /**
+     * Creates SimpleXMLElement from raw response data, if response is not valid, quitely return null to allow to try other services
+     * 
+     * @param string $rawXml
+     * @param string $email
+     * @return \SimpleXMLElement|null
+     */
     protected function createXml($rawXml, $email): ?\SimpleXMLElement
     {
         if ($rawXml === false) {
@@ -185,7 +293,14 @@ class MailServerDiscovery
         return null;
     }
 
-    protected function guessService($email)
+    
+    /**
+     * Creates simple Guessed service based on usual values for email server, prefers SSL connection
+     * 
+     * @param string $email
+     * @return GuessedMailService configured service
+     */
+    protected function guessService(string $email)
     {
         $service = new GuessedMailService();
         $service->guessFromEmail($email, $this->options[self::OPTION_PREFERRED_TYPE]);
