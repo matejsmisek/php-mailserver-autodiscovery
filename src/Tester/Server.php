@@ -32,10 +32,10 @@ class Server
     public function connectOLD()
     {
         if (!($socket = fsockopen(($this->server->getEncryption() === MailServerInterface::ENCRYPTION_SSL ? 'tls://' : 'tcp://') . $this->server->getHost(), $this->server->getPort(), $errno, $errstr, 15))) {
-            throw new \RuntimeException("Error connecting to '$host' ($errno) ($errstr)");
+            throw new \Exception("Error connecting to '$host' ($errno) ($errstr)");
         }
         if (!stream_set_timeout($socket, 2)) {
-            throw new \RuntimeException("Error setting Timeout");
+            throw new \Exception("Error setting Timeout");
         }
 //        var_dump($socket);
         $this->socket = $socket;
@@ -49,7 +49,7 @@ class Server
 
         if (function_exists('stream_socket_client')) {
             $context = stream_context_create([]);
-//            set_error_handler([$this, 'errorHandler']);
+            set_error_handler([$this, 'errorHandler']);
             $this->socket = stream_socket_client(
                     $host . ':' . $port,
                     $errno,
@@ -58,18 +58,18 @@ class Server
                     STREAM_CLIENT_CONNECT,
                     $context
             );
-//            restore_error_handler();
+            restore_error_handler();
         } else {
-//            set_error_handler([$this, 'errorHandler']);
+            set_error_handler([$this, 'errorHandler']);
             $this->socket = fsockopen($host, $port, $errno, $errstr, $this->timeout);
-//            restore_error_handler();
+            restore_error_handler();
         }
         if (!is_resource($this->socket)) {
-            throw new \RuntimeException("Error connecting to '$host' ($errno) ($errstr)");
+            throw new \Exception("Error connecting to '$host' ($errno) ($errstr)");
             ;
         }
-        if (!stream_set_timeout($this->socket, 2)) {
-            throw new \RuntimeException("Error setting Timeout");
+        if (!stream_set_timeout($this->socket, 5)) {
+            throw new \Exception("Error setting Timeout");
         }
         $this->connected = true;
         $this->lastResponse = $this->readResponse();
@@ -82,10 +82,13 @@ class Server
         @fclose($this->socket);
     }
 
+    public function errorHandler() {
+        
+    }
     protected function sendCommand($command)
     {
         if (!is_resource($this->socket)) {
-            throw new \RuntimeException("Socket is not a stream");
+            throw new \Exception("Socket is not a stream");
         }
         $this->history .= $command . "\r\n";
         fwrite($this->socket, $command . "\r\n");
@@ -101,12 +104,12 @@ class Server
      * 
      * 
      * @return string
-     * @throws \RuntimeException
+     * @throws \Exception
      */
     protected function readResponse()
     {
         if (!is_resource($this->socket)) {
-            throw new \RuntimeException("Socket is not a stream");
+            throw new \Exception("Socket is not a stream");
         }
 
         $timelimit = time() + 300;
@@ -130,12 +133,12 @@ class Server
             }
             $info = stream_get_meta_data($this->socket);
             if ($info['timed_out']) {
-                echo "Timedout\n";
+//                echo "Timedout\n";
                 break;
             }
 
             if (time() > $timelimit) {
-                echo "Long read\n";
+//                echo "Long read\n";
                 break;
             }
         }

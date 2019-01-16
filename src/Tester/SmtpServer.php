@@ -18,18 +18,18 @@ class SmtpServer extends Server
         try {
             $this->connect();
             if ($this->checkResponse(220) === false) {
-                throw new \RuntimeException('Error connecting');
+                throw new \Exception('Error connecting');
             }
             $this->sendCommand('EHLO ' . $this->server->getHost());
             if ($this->checkResponse(250) === false) {
-                throw new \RuntimeException('Error Ehloing');
+                throw new \Exception('Error Ehloing');
             }
             if ($this->server->getEncryption() === MailServerInterface::ENCRYPTION_STARTTLS) {
                 $this->enableStarttls();
             }
             $result = true;
         } catch (\Exception $e) {
-            echo $e->getMessage();
+//            echo $e->getMessage();
             return false;
         }
         return $result;
@@ -42,15 +42,15 @@ class SmtpServer extends Server
 
             $this->sendCommand('AUTH LOGIN');
             if ($this->checkResponse(334) === false) {
-                throw new \RuntimeException('Error Login');
+                throw new \Exception('Error Login');
             }
             $this->sendCommand(base64_encode($username));
             if ($this->checkResponse(334) === false) {
-                throw new \RuntimeException('Error Login');
+                throw new \Exception('Error Login');
             }
             $this->sendCommand(base64_encode($password));
             if ($this->checkResponse(235) === false) {
-                throw new \RuntimeException('Error Login');
+                throw new \Exception('Error Login');
             }
             $result = true;
         } catch (\Exception $e) {
@@ -66,10 +66,10 @@ class SmtpServer extends Server
 
         $this->sendCommand('STARTTLS');
         if ($this->checkResponse(220) === false) {
-            throw new \RuntimeException('Error Not supporting STARTTLS');
+            throw new \Exception('Error Not supporting STARTTLS');
         }
         if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-            throw new \RuntimeException('Error STARTTLS socket');
+            throw new \Exception('Error STARTTLS socket');
         }
     }
 

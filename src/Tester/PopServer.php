@@ -18,7 +18,7 @@ class PopServer extends Server
         try {
             $this->connect();
             if ($this->checkResponse() === false) {
-                throw new \RuntimeException('Error connecting');
+                throw new \Exception('Error connecting');
             }
             if ($this->server->getEncryption() === MailServerInterface::ENCRYPTION_STARTTLS) {
                 $this->enableStarttls();
@@ -39,11 +39,11 @@ class PopServer extends Server
             
             $this->sendCommand('USER ' . $username);
             if ($this->checkResponse() === false) {
-                throw new \RuntimeException('Error USER');
+                throw new \Exception('Error USER');
             }
             $this->sendCommand('PASS ' . $password);
             if ($this->checkResponse() === false) {
-                throw new \RuntimeException('Error PASS');
+                throw new \Exception('Error PASS');
             }
             $result = true;
         } catch (\Exception $e) {
@@ -60,10 +60,10 @@ class PopServer extends Server
 
         $this->sendCommand('STLS');
         if ($this->checkResponse() === false) {
-            throw new \RuntimeException('Error Not supporting STARTTLS');
+            throw new \Exception('Error Not supporting STARTTLS');
         }
         if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-            throw new \RuntimeException('Error STARTTLS socket');
+            throw new \Exception('Error STARTTLS socket');
         }
     }
 

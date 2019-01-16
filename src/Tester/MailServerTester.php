@@ -24,29 +24,29 @@ class MailServerTester
             if ($service->getIncomingServer()->getType() === MailServerInterface::TYPE_POP3) {
                 $server = new PopServer($service->getIncomingServer());
                 $this->checkServer($server, $service->getIncomingServer(), $password);               
-                echo $server->getHistory();
+//                echo $server->getHistory();
             }
 
             if ($service->getIncomingServer()->getType() === MailServerInterface::TYPE_IMAP) {
                 $server = new ImapServer($service->getIncomingServer());
                 $this->checkServer($server, $service->getIncomingServer(), $password);
-                echo $server->getHistory();
+//                echo $server->getHistory();
             }
         }
 
         if ($service->getOutgoingServer() !== null && $service->getOutgoingServer()->getType() === MailServerInterface::TYPE_SMTP) {
             $server = new SmtpServer($service->getOutgoingServer());
             $this->checkServer($server, $service->getOutgoingServer(), $password);
-            echo $server->getHistory();
+//            echo $server->getHistory();
         }
     }
 
     protected function checkServer(Server $serverHelper, MailServerInterface $server, $password = false)
     {
-        echo "Checking server\n";
+//        echo "Checking server\n";
         $server->setValidServer($serverHelper->check());
         if ($password !== false && $server->isValidServer() === true) {
-            echo "Checking login\n";
+//            echo "Checking login\n";
             $server->setValidLogin($serverHelper->authenticate($server->getUsername(), $password));
         }
     }

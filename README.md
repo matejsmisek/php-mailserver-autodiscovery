@@ -11,6 +11,11 @@ Translates provided email address into full IMAP/POP3/SMTP server configuration 
 - Tries to resolve MX and SRV DNS records for more accurate finds
 - Optionally can perform test connection and login to found configurations
 
+
+## Limitations
+- Gmail accounts cannot be validated via tester and will usually report warning email to user
+
+
 ## Why you might need it
 If you are building PHP application which integrates user mailbox. Users usually don't know their email server settings and popular e-mail clients (Thunderbird, Outlook) already fills this information for them
 

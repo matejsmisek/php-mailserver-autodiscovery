@@ -32,7 +32,7 @@ class MozzilaNotationMailService extends MailService
         }
 
         if (!array_key_exists(MailServerInterface::TYPE_SMTP, $outgoingServers)) {
-            throw new \RuntimeException('No SMTP server found');
+            throw new \Exception('No SMTP server found');
         }
         $this->outgoingServer = $outgoingServers[MailServerInterface::TYPE_SMTP];
 
@@ -56,7 +56,7 @@ class MozzilaNotationMailService extends MailService
         } elseif (!empty($incomingServers)) {
             $this->incomingServer = array_shift($incomingServers);
         } else {
-            throw new \RuntimeException('No Incoming server found');
+            throw new \Exception('No Incoming server found');
         }
     }
 

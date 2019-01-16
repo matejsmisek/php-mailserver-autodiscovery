@@ -58,8 +58,8 @@ class MailServerDiscovery
      */
     public function discover(string $email): MailServiceInterface
     {
-        if (($filtered = filter_var($email, FILTER_SANITIZE_EMAIL)) === false) {
-            throw \RuntimeException('Not an email');
+        if (($filtered = filter_var($email, FILTER_VALIDATE_EMAIL)) === false) {
+            throw new \Exception('Not an email');
         }
         $domain = substr($email, strrpos($email, '@') + 1);
 

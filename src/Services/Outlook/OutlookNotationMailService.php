@@ -42,7 +42,7 @@ class OutlookNotationMailService extends MailService
         } elseif (!empty($incomingServers)) {
             $this->incomingServer = array_shift($incomingServers);
         } else {
-            throw new \RuntimeException('No Incoming server found');
+            throw new \Exception('No Incoming server found');
         }
     }
 
