@@ -2,8 +2,8 @@
 
 namespace Balgor\MailServerAutodiscovery\Services\Guess;
 
-use App\Module\Services\MailService;
-use App\Module\Services\MailServerInterface;
+use Balgor\MailServerAutodiscovery\Services\MailService;
+use Balgor\MailServerAutodiscovery\Services\MailServerInterface;
 
 /**
  * Description of MailServer

@@ -1,13 +1,13 @@
 <?php
 namespace Balgor\MailServerAutodiscovery;
 
-use App\Module\Services\MailServiceInterface;
-use App\Module\Services\MailServerInterface;
-use App\Module\Services\Mozzila\MozzilaNotationMailService;
-use App\Module\Services\Guess\GuessedMailService;
-use App\Module\Services\Outlook\OutlookNotationMailService;
+use Balgor\MailServerAutodiscovery\Services\MailServiceInterface;
+use Balgor\MailServerAutodiscovery\Services\MailServerInterface;
+use Balgor\MailServerAutodiscovery\Services\Mozzila\MozzilaNotationMailService;
+use Balgor\MailServerAutodiscovery\Services\Guess\GuessedMailService;
+use Balgor\MailServerAutodiscovery\Services\Outlook\OutlookNotationMailService;
 
-use App\Module\Tester\MailServerTester;
+use Balgor\MailServerAutodiscovery\Tester\MailServerTester;
 
 /**
  * 

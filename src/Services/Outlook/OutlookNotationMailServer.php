@@ -1,7 +1,7 @@
 <?php
 
 namespace Balgor\MailServerAutodiscovery\Services\Outlook;
-use App\Module\Services\MailServer;
+use Balgor\MailServerAutodiscovery\Services\MailServer;
 /**
  * Description of MailServer
  *

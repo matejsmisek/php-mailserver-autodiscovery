@@ -1,8 +1,8 @@
 <?php
 
 namespace Balgor\MailServerAutodiscovery\Services\Guess;
-use App\Module\Services\MailServer;
-use App\Module\Services\MailServerInterface;
+use Balgor\MailServerAutodiscovery\Services\MailServer;
+use Balgor\MailServerAutodiscovery\Services\MailServerInterface;
 /**
  * Description of MailServer
  *

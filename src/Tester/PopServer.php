@@ -2,7 +2,7 @@
 
 namespace Balgor\MailServerAutodiscovery\Tester;
 
-use App\Module\Services\MailServerInterface;
+use Balgor\MailServerAutodiscovery\Services\MailServerInterface;
 
 /**
  * Description of PopServer

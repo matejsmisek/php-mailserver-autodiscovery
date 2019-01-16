@@ -2,13 +2,13 @@
 
 namespace Balgor\MailServerAutodiscovery\Tester;
 
-use App\Module\Services\MailServiceInterface;
-use App\Module\Services\MailServerInterface;
-use App\Module\Tester\PopServer;
-use App\Module\Tester\ImapServer;
-use App\Module\Tester\SmtpServer;
-use App\Module\Services\Guess\GuessedMailServer;
-use App\Module\Services\Guess\GuessedMailService;
+use Balgor\MailServerAutodiscovery\Services\MailServiceInterface;
+use Balgor\MailServerAutodiscovery\Services\MailServerInterface;
+use Balgor\MailServerAutodiscovery\Tester\PopServer;
+use Balgor\MailServerAutodiscovery\Tester\ImapServer;
+use Balgor\MailServerAutodiscovery\Tester\SmtpServer;
+use Balgor\MailServerAutodiscovery\Services\Guess\GuessedMailServer;
+use Balgor\MailServerAutodiscovery\Services\Guess\GuessedMailService;
 
 /**
  * Description of MailServerTester
